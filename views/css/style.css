@@ -1,0 +1,104 @@
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+form {
+    border: 2px solid #ddd;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #fff;
+}
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.menu-item {
+    margin-bottom: 8px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.quantity-input {
+    width: 60px;
+}
+.menu-list {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 8px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+.quantity-container {
+    display: none;
+    align-items: center;
+    gap: 5px;
+}
+.menu-checkbox:checked ~ .quantity-container {
+    display: flex;
+}
+.menu-label {
+    flex: 1;
+    margin-bottom: 0;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+
+
+.stats-container {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+    gap: 20px;
+}
+.stat-card {
+    position: relative;
+    cursor: pointer;
+    text-decoration: none;
+    background: #0d6efd;
+    padding: 15px 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    text-align: center;
+    width: 320px;
+    height: 140px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.3);
+}
+.stat-card:nth-child(1) { background: #0d6efd; }
+.stat-card:nth-child(2) { background: #dc3545; }
+.stat-card:nth-child(3) { background: #198754; }
+.stat-card:nth-child(4) { background: #6610f2; }
+
+/* Suppression des styles inutiles */
+.stat-label, .nav-arrow {
+    display: none;
+}
+.stat-number {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: white;
+    margin: 5px 0;
+}
+/* Classe spécifique pour le chiffre d'affaires */
+.stat-card:nth-child(4) .stat-number {
+    font-size: 1.8em; /* Taille réduite pour mieux s'adapter */
+}
+.stat-title{
+    color: rgba(255,255,255,0.8);
+    font-size: 0.9em;
+    margin: 0;
+}

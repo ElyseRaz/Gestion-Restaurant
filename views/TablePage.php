@@ -1,4 +1,3 @@
-
 <?php     require_once '../auth_check.php';?>
 
 <!DOCTYPE html>
@@ -95,7 +94,7 @@
                     ?></td>
                     <td>
                         <a href="UpdateTable.php?idtable=<?php echo htmlentities($table['NUMTABLE'])?>" class="btn btn-primary btn-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
-  <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
+  <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
 </svg> Modifier</a>
                         <a href="#" onclick="confirmDelete(<?php echo htmlentities($table['NUMTABLE']); ?>)" class="btn btn-danger btn-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
@@ -138,19 +137,58 @@
     <!-- Scripts -->
     <script src="/views/css/styles/bootstrap5.3.2/js/bootstrap.min.js"></script>
     <script>
-        // Script de recherche dynamique dans le tableau
         document.getElementById('search').addEventListener('keyup', function() {
             const searchValue = this.value.toLowerCase();
-            const tableRows = document.querySelectorAll('table tbody tr');
+            const tbody = document.querySelector('table tbody');
             
-            tableRows.forEach(row => {
-                const designation = row.children[1].textContent.toLowerCase(); // Index 1 correspond à la colonne de désignation
-                if (designation.includes(searchValue)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+            if (searchValue.length > 0) {
+                fetch(`search_tables.php?search=${encodeURIComponent(searchValue)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur réseau');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        tbody.innerHTML = '';
+                        
+                        if (data.length === 0) {
+                            const row = document.createElement('tr');
+                            row.innerHTML = '<td colspan="4" class="text-center">Aucun résultat trouvé</td>';
+                            tbody.appendChild(row);
+                            return;
+                        }
+                        
+                        data.forEach(table => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${table.NUMTABLE}</td>
+                                <td>${table.DESIGNATION}</td>
+                                <td>${table.OCCUPATION == 0 ? 'Libre' : 'Occupée'}</td>
+                                <td>
+                                    <a href="UpdateTable.php?idtable=${table.NUMTABLE}" class="btn btn-primary btn-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+                                            <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
+                                        </svg> Modifier
+                                    </a>
+                                    <a href="#" onclick="confirmDelete(${table.NUMTABLE})" class="btn btn-danger btn-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                        </svg> Supprimer
+                                    </a>
+                                </td>
+                            `;
+                            tbody.appendChild(row);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Erreur lors de la recherche</td></tr>';
+                    });
+            } else {
+                window.location.reload();
+            }
         });
         
         // Fonction de confirmation pour la suppression

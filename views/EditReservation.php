@@ -2,45 +2,73 @@
 require_once '../models/Reserver.php';
 require_once '../models/Tables.php';
 require_once '../auth_check.php';
+require_once '../models/Connexion.php';
 
 // Initialiser l'instance de Reservations
 $reservationInstance = new Reserver();
 $reserver = null;
 
-// Vérifier si l'ID est passé dans l'URL
-if (isset($_GET['id'])) {
-    $idreservation = $_GET['id'];
+// Vérifier si l'ID est passé dans l'URL (soit via GET pour l'affichage initial, soit via POST pour la modification)
+$idreservation = isset($_GET['id']) ? $_GET['id'] : (isset($_GET['idreserv']) ? $_GET['idreserv'] : null);
+
+if ($idreservation) {
     // Récupérer les données de la réservation
     $reserver = $reservationInstance->getReservationById($idreservation);
 }
 
-
 // Traitement du formulaire POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Ajoutez ici le code pour traiter la modification
-    $idreserv = $_GET['idreserv'];
+    $idreserv = $idreservation;  // Utiliser l'ID récupéré plus haut
     $datereservation = $_POST['datereserv'];
     $nomcli = $_POST['nomcli'];
     $datereservee = $_POST['datereserve'];
     $idtable = $_POST['idtable'];
     $status = $_POST['status'];
 
-    $reserver = new Reserver();
-    $reserver->setIdreserv($idreserv);
-    $reserver->setDatereservation($datereservation);
-    $reserver->setNomcli($nomcli);
-    $reserver->setDatereservee($datereservee);
-    $reserver->setIdtable($idtable);
-    $reserver->setStatus($status);
-
-    $update = $reserver->updateReservation();
-    if ($update) {
-        header('Location: ReservationPage.php');
-        exit;
-    }
+    $reserverCheck = new Reserver(); // Créer une nouvelle instance pour la vérification
+    // Vérifier si la table est déjà réservée à cette heure
+    $conn = $reserverCheck->getConnexion();
+    $checkQuery = "SELECT COUNT(*) as count 
+                 FROM reserver 
+                 WHERE NUMTABLE = :idtable 
+                 AND DATE(DATERESERVE) = DATE(:datereserve)
+                 AND IDRESERVATION != :idreserv
+                 AND (
+                     :datereserve BETWEEN 
+                         DATE_SUB(DATERESERVE, INTERVAL 15 MINUTE) 
+                         AND DATE_ADD(DATERESERVE, INTERVAL 15 MINUTE)
+                     OR 
+                     DATERESERVE BETWEEN 
+                         DATE_SUB(:datereserve, INTERVAL 15 MINUTE)
+                         AND DATE_ADD(:datereserve, INTERVAL 15 MINUTE)
+                 )";
     
+    $stmt = $conn->prepare($checkQuery);
+    $stmt->execute([
+        'idtable' => $idtable,
+        'datereserve' => $datereservee,
+        'idreserv' => $idreserv
+    ]);
+    
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($result['count'] > 0) {
+        $errorMessage = "Cette table est déjà réservée dans cet intervalle horaire (±15 minutes).";
+    } else {
+        $reserver = new Reserver();
+        $reserver->setIdreserv($idreserv);
+        $reserver->setDatereservation($datereservation);
+        $reserver->setNomcli($nomcli);
+        $reserver->setDatereservee($datereservee);
+        $reserver->setIdtable($idtable);
+        $reserver->setStatus($status);
 
-
+        $update = $reserver->updateReservation();
+        if ($update) {
+            header('Location: ReservationPage.php');
+            exit;
+        }
+    }
 }
 ?>
 
@@ -61,7 +89,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              <h1 class="mb-4 text-center text-primary">Modifier une réservation</h1>
                 <div class="card shadow-sm">
                     <div class="card-body p-4">
-                        <?php if ($reserver): ?>
+                        <?php if (isset($errorMessage)): ?>
+                            <div class="alert alert-danger">
+                                <?php echo $errorMessage; ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (!$reserver): ?>
+                            <div class="alert alert-danger">Réservation non trouvée.</div>
+                        <?php else: ?>
                             <form action="EditReservation.php?idreserv=<?php echo $reserver->getIdreserv(); ?>" method="POST">
                                 <div class="mb-3">
                                     <label for="idreserv" class="form-label">Numéro de réservation</label>
@@ -108,8 +143,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <button type="button" onclick="window.location='ReservationPage.php'" class="btn btn-danger">Annuler</button>
                                 </div>
                             </form>
-                        <?php else: ?>
-                            <div class="alert alert-danger">Réservation non trouvée.</div>
                         <?php endif; ?>
                     </div>
                 </div>

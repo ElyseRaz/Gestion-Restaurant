@@ -259,6 +259,23 @@
                 return 0;
             }
         }
+
+        // Méthode pour rechercher des tables
+        public function searchTables($search) {
+            try {
+
+                $db = $this->getConnexion();
+                $query = "SELECT * FROM tables WHERE DESIGNATION LIKE :search OR NUMTABLE LIKE :search";
+                $stmt = $db->prepare($query);
+                $searchTerm = "%" . $search . "%";
+                $stmt->bindParam(':search', $searchTerm);
+                $stmt->execute();
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch(PDOException $e) {
+                echo "Erreur : " . $e->getMessage();
+                return [];
+            }
+        }
     }
 
 ?>

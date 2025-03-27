@@ -328,6 +328,35 @@ class Commandes extends Connexion
             return 0;
         }
     }
+
+    public function searchByDate($date) {
+        try {
+            $con = $this->getConnexion();
+            $sql = "SELECT * FROM commande WHERE DATE(DATECOM) = :date";
+            $stmt = $con->prepare($sql);
+            $stmt->execute(['date' => $date]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur recherche par date: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function searchByDateRange($startDate, $endDate) {
+        try {
+            $con = $this->getConnexion();
+            $sql = "SELECT * FROM commande WHERE DATE(DATECOM) BETWEEN :start_date AND :end_date";
+            $stmt = $con->prepare($sql);
+            $stmt->execute([
+                'start_date' => $startDate,
+                'end_date' => $endDate
+            ]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur recherche par plage de dates: " . $e->getMessage());
+            return [];
+        }
+    }
 }
 ?>
 

@@ -276,6 +276,19 @@
                 return [];
             }
         }
+
+        // Méthode pour libérer une table après paiement
+        public function libererTableApresReservation($idTable) {
+            try {
+                $con = $this->getConnexion();
+                $req = $con->prepare("UPDATE tables SET OCCUPATION = 0 WHERE NUMTABLE = ?");
+                $req->execute(array($idTable));
+                return true;
+            } catch(PDOException $e) {
+                error_log("Erreur lors de la libération de la table : " . $e->getMessage());
+                return false;
+            }
+        }
     }
 
 ?>

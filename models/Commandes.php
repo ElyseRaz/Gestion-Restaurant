@@ -201,7 +201,7 @@ class Commandes extends Connexion
     {
         try {
             $con = $this->getConnexion();
-            $sql = "SELECT * FROM commande ORDER BY IDCOM ASC LIMIT :limit OFFSET :offset";
+            $sql = "SELECT * FROM commande ORDER BY IDCOM DESC LIMIT :limit OFFSET :offset";
             $stmt = $con->prepare($sql);
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
             $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -266,7 +266,7 @@ class Commandes extends Connexion
     public function getAllCommands()
     {
         $con = $this->getConnexion();
-        $query = "SELECT * FROM commande ORDER BY IDCOM DESC"; // Assurez-vous que la requête est correcte
+        $query = "SELECT * FROM commande ORDER BY IDCOM DESC";
         $result = $con->query($query);
 
         if ($result) {

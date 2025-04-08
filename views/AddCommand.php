@@ -2,7 +2,8 @@
     require_once '../models/Commandes.php';
     require_once '../models/Commandedetail.php';
     require_once '../models/Menus.php';
-    require_once '../models/Tables.php'; 
+    require_once '../models/Tables.php';
+    require_once '../models/ReservER.php'; // Ajout du modèle Reservation
     require_once '../auth_check.php';
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -18,6 +19,16 @@
         if (!$idcom || !$nomcli || !$datecom || !$typecom) {
             $errorMessage = "Erreur : Tous les champs obligatoires doivent être remplis.";
         } else {
+            // Vérifier si le client a une réservation active
+            $reservation = new Reserver();
+            $activeReservation = $reservation->getReservationByClientName($nomcli);
+            
+            if ($activeReservation) {
+                // Mettre à jour le statut de la réservation
+                $reservation->setIdreserv($activeReservation['IDRESERVATION']);
+                $reservation->updateStatusToExpired();
+            }
+
             $commande = new Commandes();
             $commande->setIdcom($idcom);
             $commande->setIdtable($idtable);
@@ -57,6 +68,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajouter une commande</title>
+    <script src="../js/client-autocomplete.js"></script>
+    <style>
+        .suggestion-box {
+            display: none;
+            position: absolute;
+            width: 100%;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .suggestion-box div {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .suggestion-box div:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
 </head>
 <body>
     <?php require_once 'header.php'; ?>

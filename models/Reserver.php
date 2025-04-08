@@ -199,7 +199,7 @@
         public function getActiveReservationsWithPagination($limit, $offset) {
             try {
                 $con = $this->getConnexion();
-                $sql = "SELECT * FROM reserver ORDER BY IDRESERVATION ASC LIMIT :limit OFFSET :offset";
+                $sql = "SELECT * FROM reserver ORDER BY IDRESERVATION DESC LIMIT :limit OFFSET :offset";
                 $stmt = $con->prepare($sql);
                 $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
                 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -219,6 +219,97 @@
                 return (int)$result['total'];
             } catch(PDOException $e) {
                 return 0;
+            }
+        }
+
+        public function terminerReservation($idReservation) {
+            try {
+                $con = $this->getConnexion();
+                
+                // 1. Récupérer l'ID de la table associée à la réservation
+                $req = $con->prepare("SELECT NUMTABLE FROM reserver WHERE IDRESERVATION = ?");
+                $req->execute(array($idReservation));
+                $reservation = $req->fetch(PDO::FETCH_ASSOC);
+                
+                if ($reservation) {
+                    // 2. Mettre à jour le statut de la réservation
+                    $reqUpdate = $con->prepare("UPDATE reserver SET STATUT = 'Expiré' WHERE IDRESERVATION = ?");
+                    $reqUpdate->execute(array($idReservation));
+                    
+                    // 3. Libérer la table
+                    $tables = new Tables();
+                    $tables->libererTableApresReservation($reservation['NUMTABLE']);
+                    
+                    return true;
+                }
+                return false;
+            } catch(PDOException $e) {
+                error_log("Erreur lors de la terminaison de la réservation : " . $e->getMessage());
+                return false;
+            }
+        }
+
+        // Méthode pour rechercher les réservations par nom de client
+        public function searchReservationsByClient($term) {
+            try {
+                $con = $this->getConnexion();
+                $term = "%$term%";
+                $sql = "SELECT DISTINCT r.NOMCLI, r.NUMTABLE, r.DATERESERVE, t.DESIGNATION 
+                        FROM reserver r 
+                        JOIN tables t ON r.NUMTABLE = t.NUMTABLE 
+                        WHERE r.NOMCLI LIKE :term 
+                        ORDER BY r.DATERESERVE DESC 
+                        LIMIT 5";
+                
+                $stmt = $con->prepare($sql);
+                $stmt->bindParam(':term', $term, PDO::PARAM_STR);
+                $stmt->execute();
+                
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch(PDOException $e) {
+                error_log("Erreur recherche client : " . $e->getMessage());
+                return [];
+            }
+        }
+
+        public function getReservationByClientName($clientName) {
+            // Assuming a database connection is already established
+            $con = $this->getConnexion();
+            $query = "SELECT * FROM reserver WHERE NOMCLI = :clientName AND STATUT   = 'En Cours'";
+            $stmt = $con->prepare($query);
+            $stmt->bindParam(':clientName', $clientName);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+
+        public function updateStatusToExpired() {
+            try {
+                $con = $this->getConnexion();
+                $sql = "UPDATE reserver SET STATUT = 'Expiré' WHERE IDRESERVATION = :idreserv";
+                $stmt = $con->prepare($sql);
+                $stmt->bindParam(':idreserv', $this->idreserv);
+                return $stmt->execute();
+            } catch (PDOException $e) {
+                throw new Exception("Erreur lors de la mise à jour du statut: " . $e->getMessage());
+            }
+        }
+
+        // Méthode pour rechercher les réservations
+        public function searchReservations($search) {
+            try {
+                $con = $this->getConnexion();
+                $search = "%$search%";
+                $sql = "SELECT * FROM RESERVER 
+                        WHERE NOMCLI LIKE :search 
+                        ORDER BY DATERESERVE DESC";
+                
+                $stmt = $con->prepare($sql);
+                $stmt->bindParam(':search', $search, PDO::PARAM_STR);
+                $stmt->execute();
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch(PDOException $e) {
+                error_log("Erreur de recherche : " . $e->getMessage());
+                return [];
             }
         }
     }

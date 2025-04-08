@@ -123,13 +123,19 @@
         }
 
         //methode pour rechercher un menu en utilisant %LIKE%
-        public function searchMenu($searchTerm) {
-            $query = "SELECT * FROM menu WHERE NOMPLAT LIKE :searchTerm"; // Correction du nom de la table
+        public function searchMenu($searchTerm, $limit = 5, $offset = 0) {
             $con = $this->getConnexion();
-            $stmt = $con->prepare($query);
-            $stmt->bindValue(':searchTerm', '%' . $searchTerm . '%', PDO::PARAM_STR);
+            $stmt = $con->prepare(
+                "SELECT * FROM menu
+                WHERE NOMPLAT LIKE :searchTerm 
+                LIMIT :limit OFFSET :offset"
+            );
+            $searchTerm = "%$searchTerm%";
+            $stmt->bindParam(':searchTerm', $searchTerm, PDO::PARAM_STR);
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
             $stmt->execute();
-            return $stmt; // Retourne un objet PDOStatement
+            return $stmt->fetchAll();
         }
 
         //methode pour lister les 10 plats le plus vendus

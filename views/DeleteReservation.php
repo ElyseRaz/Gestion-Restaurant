@@ -1,18 +1,21 @@
-<?php 
-
-require_once 'header.php';
+<?php
 require_once '../models/Reserver.php';
-require_once '../models/Tables.php';
 require_once '../auth_check.php';
 
-if(isset($_GET['id'])){
-    $reservid = $_GET['id'];
+if (isset($_GET['id'])) {
+    $id = $_GET['id'];
     $reserver = new Reserver();
-    $reserver->setIdreserv($reservid);
-    $reserver->deleteReservation($reservid);
+    $reserver->setIdreserv($id);
+    
+    if ($reserver->deleteReservation($id)) {
+        header('Location: ReservationPage.php');
+        exit;
+    } else {
+        header('Location: ReservationPage.php?msg=error');
+        exit;
+    }
+} else {
     header('Location: ReservationPage.php');
+    exit;
 }
-
-
-
 ?>

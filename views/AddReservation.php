@@ -23,12 +23,13 @@
                          FROM reserver 
                          WHERE NUMTABLE = :idtable 
                          AND DATE(DATERESERVE) = DATE(:datereserve)
+                         AND STATUT NOT IN ('Expiré', 'Annulé')
                          AND (
                              :datereserve BETWEEN 
                                  DATE_SUB(DATERESERVE, INTERVAL 15 MINUTE) 
                                  AND DATE_ADD(DATERESERVE, INTERVAL 15 MINUTE)
                              OR 
-                             DATERESERVE     BETWEEN 
+                             DATERESERVE BETWEEN 
                                  DATE_SUB(:datereserve, INTERVAL 15 MINUTE)
                                  AND DATE_ADD(:datereserve, INTERVAL 15 MINUTE)
                          )";

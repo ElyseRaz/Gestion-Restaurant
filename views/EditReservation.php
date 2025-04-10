@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  WHERE NUMTABLE = :idtable 
                  AND DATE(DATERESERVE) = DATE(:datereserve)
                  AND IDRESERVATION != :idreserv
+                 AND STATUT NOT IN ('Expiré', 'Annulé')
                  AND (
                      :datereserve BETWEEN 
                          DATE_SUB(DATERESERVE, INTERVAL 15 MINUTE) 
@@ -136,6 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <option value="À Venir" <?php echo ($reserver->getStatus() === 'À Venir') ? 'selected' : ''; ?>>À Venir</option>
                                         <option value="En cours" <?php echo ($reserver->getStatus() === 'En cours') ? 'selected' : ''; ?>>En cours</option>
                                         <option value="Expiré" <?php echo ($reserver->getStatus() === 'Expiré') ? 'selected' : ''; ?>>Expiré</option>
+                                        <option value="Annulé" <?php echo ($reserver->getStatus() === 'Annulé') ? 'selected' : ''; ?>>Annulée</option>
                                     </select>
                                 </div>
                                 <div class="d-flex justify-content-end gap-2">

@@ -242,7 +242,6 @@ $prixTotal = $commandedetail->getPrixTotal();
                                             value="<?php echo htmlspecialchars($menu['PRIX']); ?>">
                                         <label class="form-check-label menu-label" for="menu_<?php echo htmlspecialchars($menuId); ?>">
                                             <?php echo htmlspecialchars($menu['NOMPLAT']); ?> 
-                                            (<?php echo number_format($menu['PRIX'], 2); ?> €)
                                         </label>
                                         <div class="quantity-container" style="display: <?php echo $isChecked ? 'flex' : 'none'; ?>">
                                             <label>Qté:</label>
